@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ConseilRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ConseilRepository::class)]
 class Conseil
@@ -12,19 +13,24 @@ class Conseil
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['list_conseil'])]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(['list_conseil'])]
     private ?int $month = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['list_conseil'])]
     private ?string $city = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['list_conseil'])]
     private ?string $description = null;
 
     #[ORM\ManyToOne(inversedBy: 'conseils')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['list_conseil'])]
     private ?User $user = null;
 
     public function getId(): ?int
