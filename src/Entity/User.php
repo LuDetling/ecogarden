@@ -44,11 +44,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $country = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['list_conseil'])]
+    #[Groups(['list_conseil', 'admin_conseil'])]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['list_conseil'])]
+    #[Groups(['list_conseil', 'admin_conseil'])]
     private ?string $lastname = null;
 
     /**

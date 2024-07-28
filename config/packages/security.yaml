@@ -24,18 +24,21 @@ security:
             pattern: ^/auth
             stateless: true
             json_login:
-                check_path: /auth/login_check # or api_login_check as defined in config/routes.yaml
+                check_path: /auth # or api_login_check as defined in config/routes.yaml
+                username_path: email
+                password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
         api:
-            pattern:   ^/auth
+            pattern: ^/
             stateless: true
             jwt: ~
 
     access_control:
-        - { path: ^/auth, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/,       roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/auth, roles: PUBLIC_ACCESS }
+        - { path: ^/user, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
 
 
             # activate different ways to authenticate

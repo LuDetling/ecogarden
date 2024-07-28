@@ -15,26 +15,26 @@ class Conseil
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['list_conseil'])]
+    #[Groups(['list_conseil', 'admin_conseil'])]
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['list_conseil'])]
+    #[Groups(['list_conseil', 'admin_conseil'])]
     private ?int $month = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['list_conseil'])]
+    #[Groups(['list_conseil', 'admin_conseil'])]
     private ?string $city = null;
 
     #[Assert\NotBlank(message: "La description est obligatoire")]
     #[Assert\Length(min: 10, minMessage: "La description doit faire au moins {{ limit }} caractères")]
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['list_conseil'])]
+    #[Groups(['list_conseil', 'admin_conseil'])]
     private ?string $description = null;
 
     #[ORM\ManyToOne(inversedBy: 'conseils')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['list_conseil'])]
+    #[Groups(['list_conseil', 'admin_conseil'])]
     private ?User $user = null;
 
     public function getId(): ?int

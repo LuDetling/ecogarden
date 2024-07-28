@@ -42,10 +42,9 @@ class MeteoController extends AbstractController
     #[Route('/meteo', name: 'app_meteo')]
     public function meteo(): Response
     {   
-        // a changer
+        /**@var $user User */
         $user = $this->getUser();
-        dd($user);
-        $city = "";
+        $city = $user->getCountry();
         $meteo = $this->fetchWeatherApi($city);
 
         return $this->json(data: [
