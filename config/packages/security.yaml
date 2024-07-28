@@ -13,12 +13,30 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        main:
-            lazy: true
-            provider: app_user_provider
+        # main:
+        #     lazy: true
+        #     provider: app_user_provider
+        #     json_login:
+        #         # api_login is a route we will create below
+        #         check_path: app_login
+                
+        login:
+            pattern: ^/auth
+            stateless: true
             json_login:
-                # api_login is a route we will create below
-                check_path: app_login
+                check_path: /auth/login_check # or api_login_check as defined in config/routes.yaml
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        api:
+            pattern:   ^/auth
+            stateless: true
+            jwt: ~
+
+    access_control:
+        - { path: ^/auth, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/,       roles: IS_AUTHENTICATED_FULLY }
+
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -28,9 +46,9 @@ security:
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
-    access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+    # access_control:
+    #     # - { path: ^/admin, roles: ROLE_ADMIN }
+    #     # - { path: ^/profile, roles: ROLE_USER }
 
 when@test:
     security:

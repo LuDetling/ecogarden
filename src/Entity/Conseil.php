@@ -6,6 +6,8 @@ use App\Repository\ConseilRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: ConseilRepository::class)]
 class Conseil
@@ -24,6 +26,8 @@ class Conseil
     #[Groups(['list_conseil'])]
     private ?string $city = null;
 
+    #[Assert\NotBlank(message: "La description est obligatoire")]
+    #[Assert\Length(min: 10, minMessage: "La description doit faire au moins {{ limit }} caractères")]
     #[ORM\Column(type: Types::TEXT)]
     #[Groups(['list_conseil'])]
     private ?string $description = null;
