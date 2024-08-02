@@ -86,10 +86,24 @@ class ConseilController extends AbstractController
     {
         $conseil = $this->conseilRepository->find($id);
         if (!$conseil) return $this->json('Pas de conseil trouvé à cet id');
-        
-        $content = $request->toArray();
-        dd($content);
 
-        return $this->json(data: ['conseil' => $conseil], context: ['groups' => ['admin_conseil']]);
+        //formtype meme en api
+
+        $content = $request->toArray();
+        if (isset($content["description"])) {
+            $conseil->setDescription($content["description"]);
+        }
+        if (isset($content["month"])) {
+            $conseil->setMonth($content["month"]);
+        }
+        if (isset($content["city"])) {
+            $conseil->setCity($content["city"]);
+        }
+        $this->entityManager->flush();
+
+        return $this->json(data: [
+            'message' => "Vos données ont bien été modifié",
+            'content' => $content
+        ], context: ['groups' => ['admin_conseil']]);
     }
 }
