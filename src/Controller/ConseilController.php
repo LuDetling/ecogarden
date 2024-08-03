@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Conseil;
+use App\Form\ConseilType;
 use App\Repository\ConseilRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[IsGranted("ROLE_USER")]
 class ConseilController extends AbstractController
@@ -18,7 +20,8 @@ class ConseilController extends AbstractController
 
     public function __construct(
         private ConseilRepository $conseilRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private SerializerInterface $serializer
     ) {
     }
 
@@ -51,17 +54,18 @@ class ConseilController extends AbstractController
     #[Route('/conseil', name: 'create_conseil', methods: 'POST')]
     public function createConseil(Request $request): Response
     {
-        $conseil = new Conseil();
+        $conseil = $this->serializer->deserialize($request->getContent(), Conseil::class, 'json');
+        /**@var $user User */
         $user = $this->getUser();
-        $conseil->setCity($request->query->get('city'))
-            ->setDescription($request->query->get('description'))
-            ->setMonth($request->query->get('month'))
-            ->setUser($user);
+        $conseil->setUser($user);
 
         $this->entityManager->persist($conseil);
         $this->entityManager->flush();
 
-        return $this->json(data: ['conseil' => $conseil], context: ['groups' => ['admin_conseil']]);
+        return $this->json(data: [
+            'message' => 'Le conseil a été ajouté',
+            'conseil' => $conseil
+        ], context: ['groups' => ['admin_conseil']]);
     }
 
     #[IsGranted('ROLE_ADMIN')]
@@ -86,6 +90,23 @@ class ConseilController extends AbstractController
     {
         $conseil = $this->conseilRepository->find($id);
         if (!$conseil) return $this->json('Pas de conseil trouvé à cet id');
+        $test = $this->serializer->deserialize($request->getContent(), Conseil::class, 'json');
+
+        $form = $this->createForm(ConseilType::class, $conseil);
+        $form->handleRequest($request);
+        dd($test);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $this->entityManager->flush();
+
+            return $this->json('Le conseil a été modifié');
+        }
+        return $this->json([
+            'conseil' => $conseil
+        ], context: [
+            'groups' => ['admin_conseil']
+        ]);
 
         //formtype meme en api
 
