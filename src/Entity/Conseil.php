@@ -20,10 +20,14 @@ class Conseil
 
     #[ORM\Column]
     #[Groups(['list_conseil', 'admin_conseil'])]
+    #[Assert\NotBlank(message: 'Le mois doit être ajouté')]
+    #[Assert\Range(min: 1, max: 12, notInRangeMessage: "Il faut mettre un mois valide")]
     private ?int $month = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['list_conseil', 'admin_conseil'])]
+    #[Assert\NotBlank(message: 'La ville doit être ajoutée')]
+    #[Assert\Length(min: 1, max: 60, minMessage: "Il faut une ville avec au moins {{ limit }} caractères", maxMessage: "Il faut une ville avec au maximum {{ limit }} caractères")]
     private ?string $city = null;
 
     #[Assert\NotBlank(message: "La description est obligatoire")]

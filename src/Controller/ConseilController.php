@@ -7,12 +7,15 @@ use App\Form\ConseilType;
 use App\Repository\ConseilRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[IsGranted("ROLE_USER")]
 class ConseilController extends AbstractController
@@ -21,7 +24,8 @@ class ConseilController extends AbstractController
     public function __construct(
         private ConseilRepository $conseilRepository,
         private EntityManagerInterface $entityManager,
-        private SerializerInterface $serializer
+        private SerializerInterface $serializer,
+        private ValidatorInterface $validator
     ) {
     }
 
@@ -44,6 +48,7 @@ class ConseilController extends AbstractController
         $conseil = $this->conseilRepository->findBy([
             'month' => $month
         ]);
+        if (!$conseil) return $this->json("Pas de conseil pour ce mois");
 
         return $this->json(data: [
             'conseil' => $conseil,
@@ -58,6 +63,11 @@ class ConseilController extends AbstractController
         /**@var $user User */
         $user = $this->getUser();
         $conseil->setUser($user);
+
+        $error = $this->validator->validate($conseil);
+        if ($error->count() > 0) {
+            return $this->json($error);
+        }
 
         $this->entityManager->persist($conseil);
         $this->entityManager->flush();
@@ -85,46 +95,20 @@ class ConseilController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/conseil/{id}', name: 'update_conseil', methods: 'PUT')]
+    #[Route('/conseil/{id}', name: 'update_conseil', methods: ['PUT'])]
     public function updateConseil(int $id, Request $request): Response
     {
         $conseil = $this->conseilRepository->find($id);
+
         if (!$conseil) return $this->json('Pas de conseil trouvé à cet id');
-        $test = $this->serializer->deserialize($request->getContent(), Conseil::class, 'json');
-
-        $form = $this->createForm(ConseilType::class, $conseil);
-        $form->handleRequest($request);
-        dd($test);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            $this->entityManager->flush();
-
-            return $this->json('Le conseil a été modifié');
-        }
-        return $this->json([
-            'conseil' => $conseil
-        ], context: [
-            'groups' => ['admin_conseil']
-        ]);
-
-        //formtype meme en api
-
-        $content = $request->toArray();
-        if (isset($content["description"])) {
-            $conseil->setDescription($content["description"]);
-        }
-        if (isset($content["month"])) {
-            $conseil->setMonth($content["month"]);
-        }
-        if (isset($content["city"])) {
-            $conseil->setCity($content["city"]);
-        }
+        $updatedConseil = $this->serializer->deserialize(
+            $request->getContent(),
+            Conseil::class,
+            'json',
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $conseil]
+        );
+        $this->entityManager->persist($updatedConseil);
         $this->entityManager->flush();
-
-        return $this->json(data: [
-            'message' => "Vos données ont bien été modifié",
-            'content' => $content
-        ], context: ['groups' => ['admin_conseil']]);
+        return $this->json('Le conseil a été modifié', context: ['groups' => 'admin_conseil']);
     }
 }
