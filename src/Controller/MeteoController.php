@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 
 class MeteoController extends AbstractController
 {
@@ -42,7 +44,8 @@ class MeteoController extends AbstractController
     #[Route('/meteo', name: 'app_meteo')]
     public function meteo(): Response
     {   
-        /**@var $user User */
+
+        /**@var User */
         $user = $this->getUser();
         $city = $user->getCity();
         $meteo = $this->fetchWeatherApi($city);
