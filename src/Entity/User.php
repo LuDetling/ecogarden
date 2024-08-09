@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -19,6 +20,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Assert\NotBlank(message: "L'email est obligatoire")]
+    #[Assert\Email(message: "L'email doit être valide")]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
@@ -32,23 +35,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
+    #[Assert\PasswordStrength()]
     private ?string $password = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: "L'adresse est obligatoire")]
     private ?string $address = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: "Le code postale est obligatoire")]
+    #[Assert\Length(exactly: 5, exactMessage: "Le code postale est obligatoire et doit être de {{ limit }} chiffres")]
     private ?int $postcode = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: "Le pays est obligatoire")]
+    #[Assert\Length(min: 5, minMessage: "Le pays est obligatoire et doit être de {{ limit }} minimum charactères")]
     private ?string $country = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['list_conseil', 'admin_conseil'])]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire")]
+    #[Assert\Length(min: 2, minMessage: "Le prénom est obligatoire et doit être de {{ limit }} minimum charactères")]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['list_conseil', 'admin_conseil'])]
+    #[Assert\NotBlank(message: "Le nom de famille est obligatoire")]
+    #[Assert\Length(min: 2, minMessage: "Le nom de famille est obligatoire et doit être de {{ limit }} minimum charactères")]
     private ?string $lastname = null;
 
     /**
@@ -58,6 +72,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $conseils;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "La ville est obligatoire")]
+    #[Assert\Length(min: 2, minMessage: "La ville est obligatoire et doit être de {{ limit }} minimum charactères")]
     private ?string $city = null;
 
     public function __construct()

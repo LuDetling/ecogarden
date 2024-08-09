@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
@@ -20,7 +21,8 @@ class UserController extends AbstractController
     public function __construct(
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
-        private SerializerInterface $serializer
+        private SerializerInterface $serializer,
+        private ValidatorInterface $validator
     ) {}
 
     #[Route('/user', name: 'app_user', methods: ['POST'])]
@@ -32,6 +34,12 @@ class UserController extends AbstractController
             $user->getPassword()
         );
         $user->setPassword($hashedPassword);
+
+        $errors = $this->validator->validate($user);
+        if ($errors->count() > 0) {
+            return $this->json($errors);
+        }
+        
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -50,6 +58,11 @@ class UserController extends AbstractController
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $user]
         );
+
+        $errors = $this->validator->validate($updatedUser);
+        if($errors->count() > 0){
+            return $this->json($errors);
+        }
 
         $this->entityManager->persist($updatedUser);
         $this->entityManager->flush();
