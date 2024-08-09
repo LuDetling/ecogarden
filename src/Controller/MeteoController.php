@@ -44,7 +44,7 @@ class MeteoController extends AbstractController
     {   
         /**@var $user User */
         $user = $this->getUser();
-        $city = $user->getCountry();
+        $city = $user->getCity();
         $meteo = $this->fetchWeatherApi($city);
 
         return $this->json(data: [

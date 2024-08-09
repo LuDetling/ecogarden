@@ -100,7 +100,7 @@ class ConseilController extends AbstractController
     {
         $conseil = $this->conseilRepository->find($id);
 
-        if (!$conseil) return $this->json('Pas de conseil trouvé à cet id');
+        if (!$conseil) return $this->json('Pas de conseil trouvé à cet id', 200);
         $updatedConseil = $this->serializer->deserialize(
             $request->getContent(),
             Conseil::class,

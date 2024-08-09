@@ -21,6 +21,7 @@ class AppFixtures extends Fixture
         //USER
         $user0 = new User();
         $user0->setAddress("51 avenue de la république")
+            ->setCity('Tours')
             ->setCountry('France')
             ->setPostcode(37100)
             ->setEmail("lucas.detling@gmail.com")

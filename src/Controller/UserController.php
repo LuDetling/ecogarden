@@ -11,52 +11,59 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class UserController extends AbstractController
 {
 
     public function __construct(
         private UserRepository $userRepository,
-        private EntityManagerInterface $entityManager
-    ) {
-    }
+        private EntityManagerInterface $entityManager,
+        private SerializerInterface $serializer
+    ) {}
 
     #[Route('/user', name: 'app_user', methods: ['POST'])]
     public function index(UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager, Request $request): Response
     {
-        $user = new User();
-        $user->setFirstname($request->request->get('firstname'))
-            ->setLastname($request->request->get('lastname'))
-            ->setEmail($request->request->get('email'))
-            ->setAddress($request->request->get('address'))
-            ->setPostcode($request->request->get('postcode'))
-            ->setCountry($request->request->get('country'));
-
-        // hash the password (based on the security.yaml config for the $user class)
+        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         $hashedPassword = $passwordHasher->hashPassword(
             $user,
-            $request->request->get('password')
+            $user->getPassword()
         );
         $user->setPassword($hashedPassword);
-
         $entityManager->persist($user);
         $entityManager->flush();
 
         return $this->json($user);
     }
 
-    // #[IsGranted('ROLE_ADMIN')]
-    // #[Route('/user/{id}', name: "update_user", methods: ["PUT"])]
-    // public function updateUser(int $id)
-    // {
-    // }
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/user/{id}', name: "update_user", methods: ["PUT"])]
+    public function updateUser(User $user, Request $request): Response
+    {
+        if (!$user) return $this->json('Pas de utilisateur trouvé à cet id', 200);
+
+        $updatedUser = $this->serializer->deserialize(
+            $request->getContent(),
+            User::class,
+            'json',
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $user]
+        );
+
+        $this->entityManager->persist($updatedUser);
+        $this->entityManager->flush();
+        return $this->json([
+            "message" => "L'utilisateur a bien été modifié."
+        ], 204);
+    }
 
     #[IsGranted('ROLE_ADMIN')]
     #[Route('/user/{id}', name: "delete_user", methods: ["DELETE"])]
     public function deleteUser(int $id): Response
     {
         $user = $this->userRepository->find($id);
-        if (!$user) return $this->json('Aucun user n\'a cet id.');
+        if (!$user) return $this->json('Aucun utilisateur n\'a cet id.');
         $this->entityManager->remove($user);
         $this->entityManager->flush();
 

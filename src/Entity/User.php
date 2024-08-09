@@ -57,6 +57,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Conseil::class, mappedBy: 'user')]
     private Collection $conseils;
 
+    #[ORM\Column(length: 255)]
+    private ?string $city = null;
+
     public function __construct()
     {
         $this->conseils = new ArrayCollection();
@@ -223,6 +226,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $conseil->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(string $city): static
+    {
+        $this->city = $city;
 
         return $this;
     }
