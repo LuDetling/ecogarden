@@ -26,8 +26,7 @@ class ConseilController extends AbstractController
         private EntityManagerInterface $entityManager,
         private SerializerInterface $serializer,
         private ValidatorInterface $validator
-    ) {
-    }
+    ) {}
 
     #[Route('/conseil', name: 'conseil', methods: 'GET')]
     public function conseils(): Response
@@ -107,6 +106,10 @@ class ConseilController extends AbstractController
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $conseil]
         );
+        $errors = $this->validator->validate($updatedConseil);
+        if ($errors->count() > 0) {
+            return $this->json($errors);
+        }
         $this->entityManager->persist($updatedConseil);
         $this->entityManager->flush();
         return $this->json('Le conseil a été modifié', context: ['groups' => 'admin_conseil']);
