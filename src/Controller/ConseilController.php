@@ -59,7 +59,7 @@ class ConseilController extends AbstractController
     public function createConseil(Request $request): Response
     {
         $conseil = $this->serializer->deserialize($request->getContent(), Conseil::class, 'json');
-        /**@var $user User */
+        /**@var User $user */
         $user = $this->getUser();
         $conseil->setUser($user);
 

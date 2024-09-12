@@ -31,6 +31,18 @@ class AppFixtures extends Fixture
             ->setPassword($this->hasher->hashPassword($user0, "admin"));
         $manager->persist($user0);
 
+        $user1 = new User();
+        $user1->setAddress("51 avenue de la république")
+            ->setCity('Tours')
+            ->setCountry('France')
+            ->setPostcode(37100)
+            ->setEmail("marie.heuman@gmail.com")
+            ->setFirstname('Marie')
+            ->setLastname('Heuman')
+            ->setRoles()
+            ->setPassword($this->hasher->hashPassword($user1, "admin"));
+        $manager->persist($user1);
+
         // CONSEIL
         $conseil0 = new Conseil();
         $conseil0->setCity('Tours')
